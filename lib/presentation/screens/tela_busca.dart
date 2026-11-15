@@ -5,6 +5,7 @@ import '../../controllers/controlador_busca.dart';
 import '../../data/falhas.dart';
 import '../../data/repositorio_previsao.dart';
 import '../../models/cidade.dart';
+import '../widgets/fonte_dos_dados.dart';
 import '../widgets/mensagem_estado.dart';
 import '../widgets/sigla_uf.dart';
 import 'tela_previsao.dart';
@@ -133,29 +134,33 @@ class _TelaBuscaState extends State<TelaBusca> {
     }
 
     final tema = Theme.of(context);
-    return ListView.separated(
+    final total = resultados.length;
+    return CustomScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      itemCount: resultados.length + 1,
-      separatorBuilder: (_, indice) =>
-          indice == 0 ? const SizedBox.shrink() : const Divider(indent: 20, endIndent: 20),
-      itemBuilder: (context, indice) {
-        if (indice == 0) {
-          final total = resultados.length;
-          return Padding(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
             child: Text(
               total == 1 ? '1 localidade' : '$total localidades',
               style: tema.textTheme.labelMedium?.copyWith(color: tema.colorScheme.onSurfaceVariant),
             ),
-          );
-        }
-        final cidade = resultados[indice - 1];
-        return _ItemCidade(
-          cidade: cidade,
-          salva: widget.cidadesSalvas.contem(cidade),
-          aoTocar: () => _abrirPrevisao(cidade),
-        );
-      },
+          ),
+        ),
+        SliverList.separated(
+          itemCount: total,
+          separatorBuilder: (_, _) => const Divider(indent: 20, endIndent: 20),
+          itemBuilder: (context, indice) {
+            final cidade = resultados[indice];
+            return _ItemCidade(
+              cidade: cidade,
+              salva: widget.cidadesSalvas.contem(cidade),
+              aoTocar: () => _abrirPrevisao(cidade),
+            );
+          },
+        ),
+        const SliverToBoxAdapter(child: FonteDosDados()),
+      ],
     );
   }
 }
