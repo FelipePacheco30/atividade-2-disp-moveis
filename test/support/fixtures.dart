@@ -18,12 +18,15 @@ http.Response respostaCptec(String nomeFixture, {int status = 200}) {
 }
 
 /// Simula o serviço: a busca responde com [busca] e a previsão de cada
-/// código usa a fixture indicada em [previsoes].
+/// código usa a fixture indicada em [previsoes]. Enquanto [online] retornar
+/// falso, as requisições falham como se não houvesse rede.
 MockClient servicoFalso({
   String busca = 'busca_sao_paulo.xml',
   Map<int, String> previsoes = const {244: 'previsao_sao_paulo.xml'},
+  bool Function()? online,
 }) {
   return MockClient((request) async {
+    if (online != null && !online()) throw http.ClientException('Failed host lookup');
     if (request.url.path.endsWith('listaCidades')) return respostaCptec(busca);
     final codigo = int.parse(request.url.pathSegments[2]);
     return respostaCptec(previsoes[codigo] ?? 'previsao_inexistente.xml');
